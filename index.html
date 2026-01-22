@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>xin thầy 10 điểm 🥹</title>
+  <style>
+    :root{
+      --bg1:#0b1020;
+      --bg2:#111a33;
+      --card:#0f1731cc;
+      --stroke:#ffffff1f;
+      --text:#eaf0ff;
+      --muted:#b7c3ff;
+      --yes:#48d18f;
+      --no:#ff5b6e;
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --radius: 22px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100svh;
+      display:grid;
+      place-items:center;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 15% 20%, #2b6dff2b 0%, transparent 60%),
+        radial-gradient(900px 600px at 80% 30%, #ff4fd82b 0%, transparent 55%),
+        radial-gradient(800px 500px at 55% 85%, #49ffb52b 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow:hidden;
+    }
+
+    /* floating hearts */
+    .floaty{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.55;
+      filter: blur(.2px);
+    }
+    .floaty span{
+      position:absolute;
+      font-size: 22px;
+      animation: drift linear infinite;
+      transform: translateY(110vh);
+    }
+    @keyframes drift{
+      from { transform: translateY(110vh) translateX(0) rotate(0deg); }
+      to   { transform: translateY(-30vh) translateX(60px) rotate(25deg); }
+    }
+
+    .box-love{
+      width:min(620px, calc(100vw - 28px));
+      background: var(--card);
+      border:1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      padding: 26px 22px 22px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .badge{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      font-size: 13px;
+      color: var(--muted);
+      border:1px solid var(--stroke);
+      padding: 7px 10px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+      background: rgba(255,255,255,.04);
+    }
+
+    .title{
+      font-size: clamp(22px, 3.8vw, 30px);
+      font-weight: 800;
+      line-height:1.25;
+      margin: 0 0 10px;
+      letter-spacing: .2px;
+    }
+
+    .subtitle{
+      margin:0 0 18px;
+      color: rgba(234,240,255,.78);
+      line-height:1.55;
+      font-size: 15px;
+    }
+
+    .box{
+      position:relative;
+      height: 92px;
+      border-radius: 18px;
+      border:1px dashed rgba(255,255,255,.16);
+      background: rgba(255,255,255,.03);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 14px;
+      padding: 16px;
+      overflow: visible; /* ✅ cho nút đỏ bay ra khỏi ô */
+    }
+
+    button{
+      border:0;
+      cursor:pointer;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: .2px;
+      color: #0a1022;
+      transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 10px 20px rgba(0,0,0,.25);
+    }
+    button:active{ transform: translateY(1px) scale(.99); }
+    button:hover{ filter: brightness(1.05); }
+
+    #love{
+      background: linear-gradient(135deg, #2cffb8, var(--yes));
+    }
+    #no-love{
+      background: linear-gradient(135deg, #ff7a88, var(--no));
+      position:absolute; /* will be re-parented to .box-love by JS */
+      left: 50%;
+      transform: translateX(120px);
+    }
+
+    .footer{
+      margin-top: 14px;
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
+      color: rgba(234,240,255,.65);
+      font-size: 12.5px;
+    }
+    .hint{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      padding: 2px 7px;
+      border-radius: 8px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color: rgba(234,240,255,.8);
+    }
+
+    /* toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      pointer-events:none;
+      background: rgba(10,16,34,.78);
+      border:1px solid rgba(255,255,255,.16);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      transition: opacity .25s ease, transform .25s ease;
+      max-width: min(560px, calc(100vw - 24px));
+      text-align:center;
+      font-weight: 700;
+      z-index: 50;
+    }
+    .toast.show{
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* confetti canvas */
+    canvas#confetti{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index: 40;
+    }
+  </style>
+</head>
+<body>
+  <div class="floaty" aria-hidden="true" id="floaty"></div>
+  <canvas id="confetti"></canvas>
+
+  <div class="box-love">
+    <div class="badge">📚 xin điểm văn minh ✨</div>
+
+    <h1 class="title">thầy cho nhóm em 10 điểm mỗi người nha thầy 🥹</h1>
+    <p class="subtitle">
+      chọn giúp tụi em một đáp án thôi ạ… 
+      
+      
+      
+      
+    </p><br><br><br>
+
+    <div class="box" id="arena">
+      <button id="love">mỗi đứa 10 điểm</button>
+      <button id="no-love" aria-label="không">không</button>
+    </div>
+
+    <div class="footer">
+      </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // floating hearts background
+    const floaty = document.getElementById("floaty");
+    const hearts = ["💖","💗","💘","✨","💞","🌟","🎈"];
+    for (let i = 0; i < 18; i++){
+      const s = document.createElement("span");
+      s.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+      s.style.left = Math.random() * 100 + "vw";
+      s.style.animationDuration = (7 + Math.random() * 8) + "s";
+      s.style.animationDelay = (-Math.random() * 10) + "s";
+      s.style.fontSize = (18 + Math.random() * 16) + "px";
+      floaty.appendChild(s);
+    }
+
+    const love = document.getElementById("love");
+    const nolove = document.getElementById("no-love");
+    const arena = document.getElementById("arena");
+    const toast = document.getElementById("toast");
+    const card = document.querySelector(".box-love");
+
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2500);
+    }
+
+    // Click "yes"
+    love.addEventListener("click", () => {
+      showToast("thầy đồng ý rồi nha 😭✨ mỗi bạn 10 điểm!");
+      popConfetti();
+    });
+
+    // ✅ Make the "no" button run around the whole card (can go outside the small box)
+    function moveNoButton(){
+      const cardRect = card.getBoundingClientRect();
+      const btnRect = nolove.getBoundingClientRect();
+
+      const padding = 10;
+      const maxX = cardRect.width - btnRect.width - padding * 2;
+      const maxY = cardRect.height - btnRect.height - padding * 2;
+
+      const x = padding + Math.random() * Math.max(0, maxX);
+      const y = padding + Math.random() * Math.max(0, maxY);
+
+      // ensure it's positioned relative to the card
+      nolove.style.position = "absolute";
+      nolove.style.left = x + "px";
+      nolove.style.top  = y + "px";
+
+      // move button into the card so absolute is relative to it
+      if (nolove.parentElement !== card) card.appendChild(nolove);
+
+      nolove.style.transform = `rotate(${(Math.random()*14-7).toFixed(1)}deg)`;
+    }
+
+    // Desktop: run on hover
+    nolove.addEventListener("mouseover", moveNoButton);
+    // Mobile: run on touch
+    nolove.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      moveNoButton();
+    }, { passive: false });
+    // Keyboard focus
+    nolove.addEventListener("focus", moveNoButton);
+
+    // init
+    moveNoButton();
+
+    // --------- Confetti (simple canvas) ----------
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+
+    function hardResize(){
+      const dpr = devicePixelRatio || 1;
+      canvas.width = Math.floor(window.innerWidth * dpr);
+      canvas.height = Math.floor(window.innerHeight * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    hardResize();
+    window.addEventListener("resize", hardResize);
+
+    let confetti = [];
+    let animId = null;
+
+    function popConfetti(){
+      confetti = [];
+      const count = 120;
+      for (let i = 0; i < count; i++){
+        confetti.push({
+          x: window.innerWidth * 0.5,
+          y: window.innerHeight * 0.35,
+          vx: (Math.random() * 6 - 3),
+          vy: (Math.random() * -8 - 3),
+          size: 4 + Math.random() * 5,
+          rot: Math.random() * Math.PI,
+          vr: (Math.random() * 0.2 - 0.1),
+          life: 90 + Math.random() * 40
+        });
+      }
+      if (animId) cancelAnimationFrame(animId);
+      animateConfetti();
+    }
+
+    function animateConfetti(){
+      ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+
+      confetti.forEach(p => {
+        p.vy += 0.18;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+        p.life -= 1;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+        ctx.restore();
+      });
+
+      confetti = confetti.filter(p => p.life > 0 && p.y < window.innerHeight + 40);
+
+      if (confetti.length > 0){
+        animId = requestAnimationFrame(animateConfetti);
+      } else {
+        ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+      }
+    }
+
+    // color loop (HSL)
+    (function colorLoop(){
+      let h = 0;
+      setInterval(() => {
+        h = (h + 9) % 360;
+        ctx.fillStyle = `hsl(${h} 90% 60%)`;
+      }, 60);
+    })();
+  </script>
+</body>
+</html>
